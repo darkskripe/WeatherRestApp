@@ -3,6 +3,7 @@ package com.darkskripe.serv.requestWeather;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 
@@ -19,6 +20,8 @@ public record WeatherRequestDto(
         Integer days
 
 ) {
+    public WeatherRequestDto {if (days == null) days = 1;}
+
     @AssertTrue(message = "Trebuie furnizat fie 'city', fie 'lat' și 'lon'")
     private boolean isValid() {
         boolean hasCity = city != null && !city.isBlank();

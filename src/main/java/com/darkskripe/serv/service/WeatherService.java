@@ -3,6 +3,7 @@ package com.darkskripe.serv.service;
 import com.darkskripe.serv.controller.WeatherDto;
 import com.darkskripe.serv.dao.LocationEntity;
 import com.darkskripe.serv.dao.WeatherEntity;
+import com.darkskripe.serv.exception.ExternalServiceException;
 import com.darkskripe.serv.repository.LocationRepository;
 import com.darkskripe.serv.repository.WeatherRepository;
 import jakarta.transaction.Transactional;
@@ -42,7 +43,6 @@ public class WeatherService {
     }
 
     public WeatherDto getForecast(String city, Integer days) {
-        url=url+"forecast.json";
         if (days>maxDays) days=maxDays;
         URI uri= UriComponentsBuilder.fromUriString(url)
                 .queryParam("key",apiKey)
@@ -55,7 +55,6 @@ public class WeatherService {
     }
 
     public WeatherDto getForecast(Double lat,Double lon, Integer days) {
-        url=url+"forecast.json";
         if (days>maxDays) days=maxDays;
         URI uri= UriComponentsBuilder.fromUriString(url)
                 .queryParam("key",apiKey)
@@ -67,16 +66,11 @@ public class WeatherService {
         return mappAndSave(uri);
     }
 
-
+    @Transactional
     public WeatherDto mappAndSave(URI uri) {
         WeatherDto weatherDto = restTemplate.getForObject(uri, WeatherDto.class);
-        assert weatherDto != null;
+        if (weatherDto==null)throw new ExternalServiceException("WeatherDto is null");
 
-//        LocationEntity lEntity = mapper.locationToEntity(weatherDto);
-//        Optional<LocationEntity> tableLocationEntity = lRepository.findLocationEntityByLatAndLon(lEntity.getLat(), lEntity.getLon());
-//        if (tableLocationEntity.isPresent())lEntity = tableLocationEntity.get();
-//        else lRepository.save(lEntity);
-        //sau
         LocationEntity mapped = mapper.locationToEntity(weatherDto);
         mapped.valid();
         LocationEntity lEntity = lRepository.findLocationEntityByLatAndLon(mapped.getLat(),mapped.getLon())
